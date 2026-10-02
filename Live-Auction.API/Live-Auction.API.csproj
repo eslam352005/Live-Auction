@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
@@ -20,10 +21,6 @@
     <ProjectReference Include="..\Live-Auction.Application\Live-Auction.Application.csproj" />
     <ProjectReference Include="..\Live-Auction.Domain\Live-Auction.Domain.csproj" />
     <ProjectReference Include="..\Live-Auction.Infrastructure\Live-Auction.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

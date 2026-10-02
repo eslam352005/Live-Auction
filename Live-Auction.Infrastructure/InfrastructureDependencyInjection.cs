@@ -1,6 +1,8 @@
 ﻿using Live_Auction.Application.Interfaces;
 using Live_Auction.Domain.Entities;
 using Live_Auction.Infrastructure.Contexts;
+using Live_Auction.Infrastructure.Services.Auth;
+using Live_Auction.Infrastructure.Services.Auth.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,8 +21,8 @@ namespace Live_Auction.Infrastructure
                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
             // assign the interface to the implementation
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-
-
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             services.AddDataProtection();
             services.AddIdentityCore<ApplicationUser>(options =>

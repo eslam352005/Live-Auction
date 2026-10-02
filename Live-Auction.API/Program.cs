@@ -1,3 +1,4 @@
+using Hangfire;
 using Live_Auction.Application;
 using Live_Auction.Domain.Entities;
 using Live_Auction.Infrastructure;
@@ -8,7 +9,6 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen(c =>
@@ -18,10 +18,7 @@ builder.Services.AddSwaggerGen(c =>
         Title = "Live-Auction System",
         Version = "v1",
         Description = "Live-Auction System",
-        Contact = new OpenApiContact
-        {
-            Name = "Live-Auction"
-        }
+        Contact = new OpenApiContact { Name = "Live-Auction" }
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -39,20 +36,29 @@ builder.Services.AddSwaggerGen(c =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddDefaultPolicy(policy =>
     {
-        builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
+
 builder.Services.AddApplication()
                 .AddInfrastructure(builder.Configuration);
-var app = builder.Build();
 
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHangfireServer();   
+
+var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -64,16 +70,21 @@ using (var scope = app.Services.CreateScope())
     await UserSeeder.SeedAsync(userManager, roleManager, context);
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();            
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire");   
 
 app.MapControllers();
 
